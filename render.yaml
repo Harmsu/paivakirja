@@ -2,6 +2,7 @@ services:
   - type: web
     name: paivakirja-api
     runtime: node
+    region: frankfurt # sama kuin muilla: UpCloudin pg_hba sallii Frankfurtin Render-osoitteet
     plan: free
     rootDir: backend
     buildCommand: npm install
