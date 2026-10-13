@@ -26,7 +26,9 @@ async function raw(path, options = {}) {
   }
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || `Virhe ${res.status}`);
+    const err = new Error(body.error || `Virhe ${res.status}`);
+    err.status = res.status;
+    throw err;
   }
   return res;
 }
@@ -66,6 +68,11 @@ export const api = {
   },
   updatePhoto: (id, caption) => request(`/api/photos/${id}`, json('PUT', { caption })),
   deletePhoto: id => request(`/api/photos/${id}`, { method: 'DELETE' }),
+
+  favorites: () => request('/api/favorites'),
+  addFavorite: f => request('/api/favorites', json('POST', f)),
+  updateFavorite: (id, f) => request(`/api/favorites/${id}`, json('PUT', f)),
+  deleteFavorite: id => request(`/api/favorites/${id}`, { method: 'DELETE' }),
 
   summaryDays: params => request(`/api/summary/days?${qs(params)}`),
   mapPoints: (from, to) => request(`/api/summary/map?${qs({ from, to })}`),

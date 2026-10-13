@@ -10,11 +10,12 @@ import { getObjectBuffer } from '../storage.js';
 export const exportRouter = Router();
 
 exportRouter.get('/', async (_req, res) => {
-  const [entries, texts, photos, checkins] = await Promise.all([
+  const [entries, texts, photos, checkins, favorites] = await Promise.all([
     query('SELECT * FROM entries ORDER BY date'),
     query('SELECT * FROM text_blocks ORDER BY entry_id, sort_order, id'),
     query('SELECT * FROM photos ORDER BY entry_id, sort_order, id'),
     query('SELECT * FROM checkins ORDER BY entry_id, sort_order, id'),
+    query('SELECT name, category, latitude, longitude, created_at, last_used_at, use_count FROM favorite_places ORDER BY id'),
   ]);
 
   const byId = new Map(entries.rows.map(e => [e.id, {
@@ -45,6 +46,7 @@ exportRouter.get('/', async (_req, res) => {
     version: 1,
     exported_at: new Date().toISOString(),
     entries: [...byId.values()],
+    favorite_places: favorites.rows,
   };
 
   const filename = `paivakirja-${new Date().toISOString().slice(0, 10)}.zip`;

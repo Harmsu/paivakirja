@@ -9,6 +9,7 @@ import YearView from './views/YearView.jsx';
 import OnThisDay from './views/OnThisDay.jsx';
 import MapView from './views/MapView.jsx';
 import Settings from './views/Settings.jsx';
+import FavoritesView from './views/FavoritesView.jsx';
 
 function Login({ onLogin }) {
   const [username, setUsername] = useState('');
@@ -62,6 +63,7 @@ function Shell({ onLogout }) {
     case 'year': content = <YearView param={param} />; break;
     case 'otd': content = <OnThisDay param={param} />; break;
     case 'map': content = <MapView />; break;
+    case 'favorites': content = <FavoritesView />; break;
     case 'settings': content = <Settings onLogout={onLogout} />; break;
     default: content = <Timeline />;
   }
@@ -70,7 +72,10 @@ function Shell({ onLogout }) {
     <>
       <header className="topbar">
         <a href="#/" className="brand">Päiväkirja</a>
-        <a href="#/settings" className="icon-btn" aria-label="Asetukset">⚙</a>
+        <span>
+          <a href="#/favorites" className="icon-btn" aria-label="Suosikkipaikat">★</a>
+          <a href="#/settings" className="icon-btn" aria-label="Asetukset">⚙</a>
+        </span>
       </header>
       <main className="container">{content}</main>
       {view !== 'day' && (

@@ -1,17 +1,34 @@
-// Paikan lisäys/muokkaus: (a) nimi käsin, (b) haku Nominatimista, (c) nykyinen sijainti.
+// Paikan lisäys/muokkaus: (a) nimi käsin, (b) haku Nominatimista, (c) nykyinen sijainti,
+// (d) valinta suosikeista. Käytetään myös suosikin muokkaukseen (forFavorite).
+// Suosikista valittaessa tiedot kopioidaan lomakkeelle, ja niitä voi vielä muokata.
 import { useState } from 'react';
 import { api } from '../api.js';
 import { formatCoords } from '../format.js';
+import FavoritePicker from './FavoritePicker.jsx';
 
 const EMPTY = { place_name: '', category: '', latitude: null, longitude: null };
 
-export default function CheckinForm({ initial, onSave, onCancel }) {
+export default function CheckinForm({
+  initial, onSave, onCancel, favorites = [], forFavorite = false, saveLabel = 'Tallenna paikka',
+}) {
   const [c, setC] = useState({ ...EMPTY, ...initial, category: initial?.category ?? '' });
+  const [favoriteId, setFavoriteId] = useState(null);
+  const [saveAsFavorite, setSaveAsFavorite] = useState(false);
+  const [picking, setPicking] = useState(false);
   const [results, setResults] = useState(null);
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
   const set = patch => setC(prev => ({ ...prev, ...patch }));
   const hasCoords = c.latitude !== null && c.longitude !== null;
+  const isKnownFavorite = favorites.some(f => f.name.toLowerCase() === c.place_name.trim().toLowerCase());
+
+  function pickFavorite(f) {
+    set({ place_name: f.name, category: f.category ?? '', latitude: f.latitude, longitude: f.longitude });
+    setFavoriteId(f.id);
+    setSaveAsFavorite(false);
+    setResults(null);
+    setPicking(false);
+  }
 
   async function search() {
     if (c.place_name.trim().length < 2) { setError('Kirjoita hakusana nimikenttään'); return; }
@@ -43,12 +60,21 @@ export default function CheckinForm({ initial, onSave, onCancel }) {
     if (!c.place_name.trim()) { setError('Anna paikalle nimi'); return; }
     setBusy('save'); setError('');
     try {
-      await onSave({ ...c, place_name: c.place_name.trim(), category: c.category.trim() || null });
+      await onSave(
+        { ...c, place_name: c.place_name.trim(), category: c.category.trim() || null,
+          ...(favoriteId ? { favorite_id: favoriteId } : {}) },
+        { saveAsFavorite: saveAsFavorite && !isKnownFavorite }
+      );
     } catch (err) { setError(err.message); setBusy(''); }
   }
 
   return (
     <form className="subcard checkin-form" onSubmit={submit}>
+      {!forFavorite && favorites.length > 0 && (
+        <button type="button" className="secondary fav-open" onClick={() => setPicking(true)}>
+          ★ Valitse suosikeista
+        </button>
+      )}
       <div className="row">
         <input placeholder="Paikan nimi" value={c.place_name} onChange={e => set({ place_name: e.target.value })} />
         <button type="button" className="secondary" onClick={search} disabled={!!busy}>
@@ -84,11 +110,22 @@ export default function CheckinForm({ initial, onSave, onCancel }) {
               {busy === 'locate' ? 'Haetaan…' : 'Käytä nykyistä sijaintia'}
             </button>}
       </div>
+      {!forFavorite && (
+        isKnownFavorite
+          ? <p className="muted small">★ Tämä paikka on suosikeissa</p>
+          : (
+            <label className="check">
+              <input type="checkbox" checked={saveAsFavorite} onChange={e => setSaveAsFavorite(e.target.checked)} />
+              <span>☆ Tallenna myös suosikkeihin</span>
+            </label>
+          )
+      )}
       {error && <p className="error">{error}</p>}
       <div className="row end">
         <button type="button" className="link" onClick={onCancel}>Peruuta</button>
-        <button disabled={!!busy}>{busy === 'save' ? 'Tallennetaan…' : 'Tallenna paikka'}</button>
+        <button disabled={!!busy}>{busy === 'save' ? 'Tallennetaan…' : saveLabel}</button>
       </div>
+      {picking && <FavoritePicker favorites={favorites} onPick={pickFavorite} onClose={() => setPicking(false)} />}
     </form>
   );
 }

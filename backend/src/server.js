@@ -9,6 +9,7 @@ import { itemsRouter } from './routes/items.js';
 import { summaryRouter } from './routes/summary.js';
 import { geocodeRouter } from './routes/geocode.js';
 import { exportRouter } from './routes/export.js';
+import { favoritesRouter } from './routes/favorites.js';
 import { pool } from './db.js';
 import { isLocal, LOCAL_DIR, storageConfigured } from './storage.js';
 
@@ -43,6 +44,7 @@ app.use('/api/entries', requireAuth, entriesRouter);
 app.use('/api/summary', requireAuth, summaryRouter);
 app.use('/api/geocode', requireAuth, geocodeRouter);
 app.use('/api/export', requireAuth, exportRouter);
+app.use('/api/favorites', requireAuth, favoritesRouter);
 app.use('/api', requireAuth, itemsRouter);
 
 app.use((err, _req, res, _next) => {

@@ -7,7 +7,7 @@ import {
 } from '../entries-data.js';
 import { uploadSingle, processImage } from '../images.js';
 import { putObject, deleteObjects, storageConfigured } from '../storage.js';
-import { cleanCheckin } from './items.js';
+import { cleanCheckin, markFavoriteUsed } from './items.js';
 
 export const entriesRouter = Router();
 
@@ -81,6 +81,7 @@ entriesRouter.post('/:date/checkins', async (req, res) => {
     [entryId, c.place_name, c.category, c.latitude, c.longitude,
       await nextSortOrder('checkins', entryId)]
   );
+  await markFavoriteUsed(req.body?.favorite_id);
   res.status(201).json(rows[0]);
 });
 

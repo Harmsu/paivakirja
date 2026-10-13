@@ -76,13 +76,40 @@ export default function DayView({ date }) {
   const [upload, setUpload] = useState(null);
   const [open, setOpen] = useState(null);
   const [confirm, setConfirm] = useState(null); // { message, fn }
+  const [favorites, setFavorites] = useState([]);
+  const [notice, setNotice] = useState('');
   const fileInput = useRef(null);
 
   const reload = () => api.getDay(date).then(setEntry).catch(e => setError(e.message));
   useEffect(() => {
-    setEntry(null); setError(''); setAddingPlace(false); setEditingPlace(null);
+    setEntry(null); setError(''); setNotice(''); setAddingPlace(false); setEditingPlace(null);
     reload();
   }, [date]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const loadFavorites = () => api.favorites().then(setFavorites).catch(() => {});
+  useEffect(() => { loadFavorites(); }, []);
+  const favoriteNames = new Set(favorites.map(f => f.name.toLowerCase()));
+
+  // Paikka suosikiksi. Tuplaa ei synny: backend vastaa 409, ja kerrotaan siitä käyttäjälle.
+  async function addToFavorites(p) {
+    setNotice('');
+    try {
+      await api.addFavorite({ name: p.place_name, category: p.category, latitude: p.latitude, longitude: p.longitude });
+      setNotice(`★ ${p.place_name} lisätty suosikkeihin`);
+    } catch (e) {
+      if (e.status === 409) setNotice(`★ ${e.message}`); else setError(e.message);
+    }
+    await loadFavorites();
+  }
+
+  // Checkinin tallennus lomakkeelta; tarvittaessa samalla suosikiksi
+  async function saveCheckin(save, values, { saveAsFavorite }) {
+    await save(values);
+    setAddingPlace(false); setEditingPlace(null);
+    if (saveAsFavorite) await addToFavorites(values);
+    else if (values.favorite_id) await loadFavorites(); // käyttökerrat päivittyivät
+    await reload();
+  }
 
   // Kaikki muutokset: suorita, näytä virhe, lataa päivä uudelleen
   async function run(fn) {
@@ -129,14 +156,19 @@ export default function DayView({ date }) {
 
       <section className="card">
         <h2>Paikat</h2>
+        {notice && <p className="notice" onClick={() => setNotice('')}>{notice}</p>}
         {entry.checkins.map((c, i) => editingPlace === c.id ? (
-          <CheckinForm key={c.id} initial={c} onCancel={() => setEditingPlace(null)}
-            onSave={async v => { await api.updateCheckin(c.id, v); setEditingPlace(null); await reload(); }} />
+          <CheckinForm key={c.id} initial={c} favorites={favorites} onCancel={() => setEditingPlace(null)}
+            onSave={(v, opts) => saveCheckin(x => api.updateCheckin(c.id, x), v, opts)} />
         ) : (
           <div key={c.id} className="subcard row">
             <span>📍 <strong>{c.place_name}</strong>{c.category && <span className="muted"> · {c.category}</span>}
               {c.latitude === null && <span className="muted small"> (ei sijaintia)</span>}</span>
             <span className="item-actions">
+              <button className={`icon star${favoriteNames.has(c.place_name.toLowerCase()) ? ' on' : ''}`}
+                aria-label="Lisää suosikkeihin" onClick={() => addToFavorites(c)}>
+                {favoriteNames.has(c.place_name.toLowerCase()) ? '★' : '☆'}
+              </button>
               <MoveButtons list={entry.checkins} index={i} onMove={(ix, d) => move('checkins', entry.checkins, ix, d)} />
               <button className="link" onClick={() => setEditingPlace(c.id)}>Muokkaa</button>
               <button className="link danger" onClick={() => confirmDelete(`Poistetaanko ${c.place_name}?`, () => api.deleteCheckin(c.id))}>Poista</button>
@@ -144,8 +176,8 @@ export default function DayView({ date }) {
           </div>
         ))}
         {addingPlace ? (
-          <CheckinForm onCancel={() => setAddingPlace(false)}
-            onSave={async v => { await api.addCheckin(date, v); setAddingPlace(false); await reload(); }} />
+          <CheckinForm favorites={favorites} onCancel={() => setAddingPlace(false)}
+            onSave={(v, opts) => saveCheckin(x => api.addCheckin(date, x), v, opts)} />
         ) : (
           <button className="secondary" onClick={() => setAddingPlace(true)}>+ Lisää paikka</button>
         )}

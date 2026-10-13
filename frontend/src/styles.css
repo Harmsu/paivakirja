@@ -176,3 +176,27 @@ button.icon:disabled { opacity: .25; }
                   display: flex; align-items: center; justify-content: center; padding: 16px; }
 .modal { max-width: 360px; width: 100%; }
 button.danger-btn { background: var(--danger); color: #fff; }
+
+/* Suosikit */
+.icon-btn + .icon-btn { margin-left: 6px; }
+.notice { background: var(--accent-soft); color: var(--accent-strong); border-radius: 9px; padding: 8px 12px; margin: 0 0 10px; cursor: pointer; }
+.check { display: flex; align-items: center; gap: 10px; min-height: 44px; cursor: pointer; }
+.check input { width: 22px; height: 22px; accent-color: var(--accent); flex: none; }
+button.icon.star { color: var(--muted); }
+button.icon.star.on { color: var(--accent); }
+.fav-open { width: 100%; }
+button.block { display: block; width: 100%; margin-bottom: 12px; }
+.fav-row { display: flex; flex-direction: column; gap: 6px; }
+.link-card { display: flex; justify-content: space-between; align-items: center; color: var(--text); font-weight: 600; min-height: 52px; }
+.sheet-backdrop { position: fixed; inset: 0; z-index: 1500; background: rgba(0, 0, 0, .45); display: flex; align-items: flex-end; justify-content: center; }
+.sheet {
+  background: var(--card); width: 100%; max-width: 760px; max-height: 75vh; display: flex; flex-direction: column; gap: 8px;
+  border-radius: 18px 18px 0 0; padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+}
+.sheet-head { display: flex; justify-content: space-between; align-items: center; }
+.sheet-head h2 { margin: 0; }
+.fav-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; }
+.fav-item {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%; min-height: 54px;
+  text-align: left; background: none; color: var(--text); border-radius: 0; border-bottom: 1px solid var(--border); padding: 10px 4px;
+}

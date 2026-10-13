@@ -28,6 +28,9 @@ export default function Settings({ onLogout }) {
 
   return (
     <>
+      <a className="card link-card" href="#/favorites">
+        <span>★ Suosikkipaikat</span><span className="muted">›</span>
+      </a>
       <section className="card">
         <h2>Vie data</h2>
         <p className="muted">

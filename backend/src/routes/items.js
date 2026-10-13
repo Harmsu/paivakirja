@@ -8,18 +8,33 @@ export const itemsRouter = Router();
 
 const toNum = v => (v === null || v === undefined || v === '' ? null : Number(v));
 
-// Validoi paikan kentät. Koordinaatit ovat valinnaisia, mutta aina pareittain.
-export function cleanCheckin(body = {}) {
-  const place_name = String(body.place_name ?? '').trim();
-  if (!place_name) return { error: 'Paikan nimi puuttuu' };
+// Validoi paikan kentät (checkin ja suosikki). Koordinaatit ovat valinnaisia, mutta aina pareittain.
+export function cleanPlace(name, body = {}) {
+  const cleanName = String(name ?? '').trim();
+  if (!cleanName) return { error: 'Paikan nimi puuttuu' };
   const category = String(body.category ?? '').trim() || null;
   const latitude = toNum(body.latitude);
   const longitude = toNum(body.longitude);
   if ((latitude === null) !== (longitude === null)) return { error: 'Anna sekä leveys- että pituusaste' };
-  if (latitude !== null && !(Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180)) {
+  if (latitude !== null && !(Number.isFinite(latitude) && Number.isFinite(longitude)
+      && Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180)) {
     return { error: 'Virheelliset koordinaatit' };
   }
-  return { place_name, category, latitude, longitude };
+  return { name: cleanName, category, latitude, longitude };
+}
+
+export function cleanCheckin(body = {}) {
+  const { name, ...rest } = cleanPlace(body.place_name, body);
+  return rest.error ? rest : { place_name: name, ...rest };
+}
+
+// Checkin tehtiin suosikista: kasvatetaan käyttökertoja. Puuttuva suosikki ei ole virhe.
+export async function markFavoriteUsed(favoriteId) {
+  const id = parseInt(favoriteId, 10);
+  if (!Number.isInteger(id)) return;
+  await query(
+    'UPDATE favorite_places SET use_count = use_count + 1, last_used_at = now() WHERE id = $1', [id]
+  );
 }
 
 itemsRouter.put('/texts/:id', async (req, res) => {
@@ -50,6 +65,7 @@ itemsRouter.put('/checkins/:id', async (req, res) => {
   );
   if (!rows.length) return res.status(404).json({ error: 'Ei löytynyt' });
   await touchEntry(rows[0].entry_id);
+  await markFavoriteUsed(req.body?.favorite_id);
   res.json(rows[0]);
 });
 
