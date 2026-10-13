@@ -2,6 +2,7 @@
 // pyynnöissä on Nominatimin käyttöehtojen vaatima tunnistettava User-Agent.
 // Käyttöehdot: max 1 pyyntö/s, ei hakua joka näppäilyllä (frontend hakee vain napista).
 import { Router } from 'express';
+import { placeTypeFi } from '../place-types.js';
 
 export const geocodeRouter = Router();
 
@@ -16,7 +17,7 @@ geocodeRouter.get('/', async (req, res) => {
   lastCall = Date.now();
 
   const params = new URLSearchParams({
-    q, format: 'jsonv2', limit: '8', addressdetails: '0', 'accept-language': 'fi',
+    q, format: 'jsonv2', limit: '8', addressdetails: '0', extratags: '1', 'accept-language': 'fi',
   });
   // Haun painotus lähelle nykyistä sijaintia, jos se on annettu
   const lat = Number(req.query.lat); const lon = Number(req.query.lon);
@@ -32,7 +33,7 @@ geocodeRouter.get('/', async (req, res) => {
   res.json(data.map(p => ({
     name: p.name || p.display_name.split(',')[0],
     display_name: p.display_name,
-    category: p.type && p.type !== 'yes' ? p.type : null,
+    category: placeTypeFi(p.type, p.extratags),
     latitude: Number(p.lat),
     longitude: Number(p.lon),
   })));
