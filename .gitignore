@@ -6,3 +6,6 @@ dist/
 dev-dist/
 .local-storage/
 *.log
+!.env.test
+test-results/
+playwright-report/

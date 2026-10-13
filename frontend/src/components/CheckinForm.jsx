@@ -76,7 +76,7 @@ export default function CheckinForm({
         </button>
       )}
       <div className="row">
-        <input placeholder="Paikan nimi" value={c.place_name} onChange={e => set({ place_name: e.target.value })} />
+        <input placeholder="Paikan nimi" maxLength={200} value={c.place_name} onChange={e => set({ place_name: e.target.value })} />
         <button type="button" className="secondary" onClick={search} disabled={!!busy}>
           {busy === 'search' ? '…' : 'Hae'}
         </button>
@@ -87,7 +87,7 @@ export default function CheckinForm({
           {results.map((r, i) => (
             <li key={i}>
               <button type="button" className="result" onClick={() => {
-                set({ place_name: r.name, category: c.category || r.category || '',
+                set({ place_name: r.name.slice(0, 200), category: c.category || r.category || '',
                   latitude: r.latitude, longitude: r.longitude });
                 setResults(null);
               }}>

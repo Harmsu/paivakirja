@@ -124,6 +124,10 @@ entriesRouter.put('/:date/order', async (req, res) => {
   const { rows } = await query('SELECT id FROM entries WHERE date = $1', [req.params.date]);
   if (!rows.length) return res.status(404).json({ error: 'Ei löytynyt' });
   const entryId = rows[0].id;
+  const lists = ['text_blocks', 'photos', 'checkins'].map(t => req.body?.[t]).filter(Array.isArray);
+  if (lists.some(ids => !ids.every(id => Number.isInteger(id) && id > 0 && id <= 2147483647))) {
+    return res.status(400).json({ error: 'Virheellinen järjestys' });
+  }
   const client = await pool.connect();
   try {
     await client.query('BEGIN');

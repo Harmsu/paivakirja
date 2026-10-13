@@ -60,6 +60,12 @@ export default function MonthView({ param }) {
           );
         })}
       </div>
+      {days && days.length === 0 && (
+        <div className="empty">
+          <p>Ei kirjauksia tässä kuussa.</p>
+          <p className="muted">Napauta kalenterin päivää lisätäksesi kirjauksen, tai siirry nuolilla toiseen kuukauteen.</p>
+        </div>
+      )}
       {days && days.length > 0 && (
         <ul className="month-list">
           {[...days].reverse().map(d => (

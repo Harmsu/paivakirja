@@ -11,13 +11,16 @@ export default function OnThisDay({ param }) {
   const [mm, dd] = param ? param.split('-') : [tm, td];
   const month = Number(mm);
   const day = dd ? Number(dd) : null;
-  const [data, setData] = useState(null);
+  // Data tallennetaan avaimen kanssa: tilaa vaihdettaessa (päivä <-> kuukausi) edellisen tilan
+  // eri muotoista dataa ei saa renderöidä ennen kuin uusi on haettu.
+  const key = day ? `${month}-${day}` : `${month}`;
+  const [loaded, setLoaded] = useState({ key: null, rows: null });
+  const data = loaded.key === key ? loaded.rows : null;
   const [error, setError] = useState('');
 
   useEffect(() => {
-    setData(null);
     const p = day ? api.onThisDay(month, day) : api.summaryDays({ month });
-    p.then(setData).catch(e => setError(e.message));
+    p.then(rows => setLoaded({ key, rows })).catch(e => setError(e.message));
   }, [month, day]);
 
   const shiftDay = n => {

@@ -71,6 +71,7 @@ export default function DayView({ date }) {
   const [entry, setEntry] = useState(null);
   const [error, setError] = useState('');
   const [newText, setNewText] = useState('');
+  const [addingText, setAddingText] = useState(false); // estää tuplalähetyksen tuplanapautuksella
   const [addingPlace, setAddingPlace] = useState(false);
   const [editingPlace, setEditingPlace] = useState(null);
   const [upload, setUpload] = useState(null);
@@ -139,7 +140,7 @@ export default function DayView({ date }) {
 
   const confirmDelete = (message, fn) => setConfirm({ message, fn });
 
-  if (!entry) return <p className="muted center">{error || 'Ladataan…'}</p>;
+  if (!entry) return error ? <p className="error">{error}</p> : <p className="muted center">Ladataan…</p>;
   const isEmpty = !entry.text_blocks.length && !entry.photos.length && !entry.checkins.length;
 
   return (
@@ -213,8 +214,12 @@ export default function DayView({ date }) {
           </TextItem>
         ))}
         <textarea rows={4} placeholder="Mitä tänään tapahtui?" value={newText} onChange={e => setNewText(e.target.value)} />
-        <button disabled={!newText.trim()} onClick={() => run(async () => { await api.addText(date, newText); setNewText(''); })}>
-          Lisää teksti
+        <button disabled={!newText.trim() || addingText} onClick={async () => {
+          setAddingText(true);
+          await run(async () => { await api.addText(date, newText); setNewText(''); });
+          setAddingText(false);
+        }}>
+          {addingText ? 'Tallennetaan…' : 'Lisää teksti'}
         </button>
       </section>
 

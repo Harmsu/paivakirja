@@ -10,14 +10,20 @@ export const imgUrl = u => (u && u.startsWith('/') ? `${BASE}${u}` : u);
 
 async function raw(path, options = {}) {
   const token = getToken();
-  const res = await fetch(`${BASE}${path}`, {
-    ...options,
-    headers: {
-      ...(options.body && !(options.body instanceof FormData) ? { 'Content-Type': 'application/json' } : {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
-    },
-  });
+  let res;
+  try {
+    res = await fetch(`${BASE}${path}`, {
+      ...options,
+      headers: {
+        ...(options.body && !(options.body instanceof FormData) ? { 'Content-Type': 'application/json' } : {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...options.headers,
+      },
+    });
+  } catch {
+    // Selaimen oma viesti ("Failed to fetch") on englanniksi
+    throw new Error('Palvelimeen ei saada yhteyttä. Tarkista verkkoyhteys ja yritä uudelleen.');
+  }
   // Ei automaattista uudelleenlatausta 401:llä (aiheutti silmukan uintisovelluksessa):
   // siivotaan token ja annetaan App-komponentin näyttää kirjautuminen.
   if (res.status === 401 && path !== '/api/auth/login') {

@@ -14,5 +14,8 @@ export const pool = new Pool({
   ssl: process.env.PGSSL === 'true' ? { rejectUnauthorized: false } : false,
   max: 5,
 });
+// Joutilaan yhteyden katkeaminen (esim. Postgresin uudelleenkäynnistys) ei saa kaataa prosessia;
+// pool avaa uuden yhteyden seuraavaan kyselyyn.
+pool.on('error', err => console.error('Tietokantayhteys katkesi:', err.code || err.message));
 
 export const query = (text, params) => pool.query(text, params);

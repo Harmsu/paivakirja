@@ -37,6 +37,25 @@ Ilman Object Storage -bucketia kuvia voi testata asettamalla `.env`:iin `STORAGE
 `entries[]` sisältää päivän sarakkeet ja sisäkkäin `text_blocks`, `photos` (`file` = polku zipissä)
 ja `checkins` samoilla sarakenimillä kuin tietokannassa, joten tuonti voidaan tehdä myöhemmin.
 
+## Testit
+```bash
+npm install --prefix backend && npm install --prefix frontend
+npx --prefix frontend playwright install chromium   # kerran
+
+npm test            # kaikki (API + selain)
+npm run test:api    # backend: Vitest + Supertest  (backend/test/)
+npm run test:e2e    # selain: Playwright, puhelin- ja työpöytäkoko  (frontend/e2e/)
+```
+- **Testitietokanta luodaan automaattisesti:** testit käynnistävät kertakäyttöisen Postgresin
+  (embedded-postgres, portti 54330), luovat kannan `paivakirja_test` ja ajavat migraatiot alusta.
+  Data nollataan ennen jokaista testiä. Oikeaan dataan ei kosketa: kannan nimen on päätyttävä `_test`.
+- Oman Postgresin voi käyttää: `createdb paivakirja_test` ja tiedostoon `backend/.env.test`
+  `TEST_PG_EMBEDDED=false` ja `TEST_DATABASE_URL=postgresql://…/paivakirja_test`.
+- Kuvat tallentuvat testeissä väliaikaishakemistoon (`STORAGE_DRIVER=local`), ei Object Storageen.
+- Selaintestit käynnistävät oman backendin (3101) ja frontendin (5174), joten ne eivät häiritse
+  kehityspalvelimia (3001/5173). Kello on kiinnitetty päivään 13.10.2026 (Suomen aikaa).
+- Suorituskykymittaus (500 päivää, 2 000 kuvaa ja paikkaa) tallentuu `backend/test-results/perf.json`.
+
 ## Varmuuskopiot
 - Tietokanta: UpCloud-palvelimen yöllinen `/usr/local/bin/pg_backup.sh` (pg_dump → Google Drive, 14 vrk),
   `paivakirja` lisätty sen tietokantalistaan.

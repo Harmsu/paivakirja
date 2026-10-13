@@ -3,8 +3,10 @@
 import { Router } from 'express';
 import { query } from '../db.js';
 import { cleanPlace } from './items.js';
+import { validIdParam } from '../entries-data.js';
 
 export const favoritesRouter = Router();
+favoritesRouter.param('id', validIdParam);
 
 const UNIQUE_VIOLATION = '23505';
 // Kerrotaan olemassa olevan suosikin nimi sellaisena kuin se on tallennettu

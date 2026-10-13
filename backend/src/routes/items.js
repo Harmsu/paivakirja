@@ -1,10 +1,13 @@
 // Yksittäisten tekstien, kuvien ja paikkojen muokkaus ja poisto.
 import { Router } from 'express';
 import { query } from '../db.js';
-import { touchEntry, deleteIfEmpty, photoDto } from '../entries-data.js';
+import { touchEntry, deleteIfEmpty, photoDto, validIdParam } from '../entries-data.js';
 import { deleteObjects } from '../storage.js';
 
 export const itemsRouter = Router();
+itemsRouter.param('id', validIdParam);
+
+export const MAX_PLACE_NAME = 200;
 
 const toNum = v => (v === null || v === undefined || v === '' ? null : Number(v));
 
@@ -12,6 +15,10 @@ const toNum = v => (v === null || v === undefined || v === '' ? null : Number(v)
 export function cleanPlace(name, body = {}) {
   const cleanName = String(name ?? '').trim();
   if (!cleanName) return { error: 'Paikan nimi puuttuu' };
+  // Merkit lasketaan kokonaisina (emoji = 1), kuten käyttäjä ne näkee
+  if ([...cleanName].length > MAX_PLACE_NAME) {
+    return { error: `Paikan nimi on liian pitkä (enintään ${MAX_PLACE_NAME} merkkiä)` };
+  }
   const category = String(body.category ?? '').trim() || null;
   const latitude = toNum(body.latitude);
   const longitude = toNum(body.longitude);

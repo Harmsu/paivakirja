@@ -33,7 +33,7 @@ export default function FavoritesView() {
     await load();
   }
 
-  if (!favorites) return <p className="muted center">{error || 'Ladataan…'}</p>;
+  if (!favorites) return error ? <p className="error">{error}</p> : <p className="muted center">Ladataan…</p>;
 
   return (
     <>

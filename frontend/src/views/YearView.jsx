@@ -46,6 +46,12 @@ export default function YearView({ param }) {
             <div><strong>{sum('checkins')}</strong><span>käyntiä</span></div>
             <div><strong>{placeCounts.size}</strong><span>paikkaa</span></div>
           </div>
+          {days.length === 0 && (
+            <div className="empty">
+              <p>Ei kirjauksia vuonna {y}.</p>
+              <p className="muted">Kirjaukset kootaan tänne kuukausittain. Siirry nuolilla toiseen vuoteen.</p>
+            </div>
+          )}
           <div className="month-grid">
             {months.map(x => (
               <a key={x.m} href={`#/month/${y}-${pad(x.m)}`} className={`month-card${x.days ? '' : ' empty'}`}

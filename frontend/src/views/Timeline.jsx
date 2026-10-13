@@ -11,20 +11,25 @@ export default function Timeline() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const sentinel = useRef(null);
-  const inFlight = useRef(false); // estää tuplahaun, kun observer ja ensimmäinen haku osuvat yhteen
+  // Hakutila refeissä: observerin takaisinkutsu voi ajautua ennen uutta renderöintiä, jolloin
+  // sen sulkeuman entries/done-tila olisi vanha ja sama sivu haettaisiin kahdesti.
+  const inFlight = useRef(false);
+  const cursor = useRef(undefined); // viimeisimmän haetun päivän pvm
+  const finished = useRef(false);
 
   async function loadMore() {
-    if (inFlight.current || done) return;
+    if (inFlight.current || finished.current) return;
     inFlight.current = true;
     setLoading(true);
     try {
-      const before = entries.length ? entries[entries.length - 1].date : undefined;
-      const page = await api.timeline(before, PAGE);
+      const page = await api.timeline(cursor.current, PAGE);
+      if (page.length) cursor.current = page[page.length - 1].date;
+      if (page.length < PAGE) { finished.current = true; setDone(true); }
       setEntries(prev => [...prev, ...page]);
-      if (page.length < PAGE) setDone(true);
     } catch (e) {
       setError(e.message);
-      setDone(true); // ei uudelleenyrityssilmukkaa observerin kautta
+      finished.current = true; // ei uudelleenyrityssilmukkaa observerin kautta
+      setDone(true);
     } finally {
       inFlight.current = false;
       setLoading(false);

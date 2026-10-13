@@ -85,7 +85,16 @@ export default function MapView() {
         {count !== null && <span className="muted small">{count} käyntiä</span>}
       </div>
       {error && <p className="error">{error}</p>}
-      <div ref={el} className="map" />
+      <div className="map-wrap">
+        <div ref={el} className="map" />
+        {count === 0 && (
+          <div className="map-empty">
+            {preset === 'all'
+              ? 'Kartalla näkyvät paikat, joilla on sijainti. Lisää paikka päivän kirjaukseen haulla tai Käytä nykyistä sijaintia -napilla.'
+              : 'Ei paikkoja valitulla aikavälillä.'}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

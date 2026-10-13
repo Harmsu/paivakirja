@@ -76,3 +76,10 @@ export async function loadEntries(whereSql, params, orderSql = 'e.date DESC', li
   for (const p of photos.rows) byId.get(p.entry_id).photos.push(await photoDto(p));
   return [...byId.values()];
 }
+
+// Express-reitittimen :id-parametri: muu kuin positiivinen kokonaisluku (int4) -> 404,
+// muuten Postgres heittäisi virheen ja vastaus olisi 500.
+export function validIdParam(_req, res, next, id) {
+  if (!/^\d{1,10}$/.test(id) || Number(id) > 2147483647) return res.status(404).json({ error: 'Ei löytynyt' });
+  next();
+}
