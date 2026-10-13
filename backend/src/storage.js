@@ -5,7 +5,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {
-  S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectsCommand,
+  S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
@@ -26,6 +26,9 @@ const s3 = s3Configured && !isLocal
       endpoint: process.env.S3_ENDPOINT,
       region: process.env.S3_REGION || 'europe-1',
       forcePathStyle: true,
+      // Uudet oletustarkistussummat (CRC32) eivät ole kaikissa S3-yhteensopivissa palveluissa tuettuja
+      requestChecksumCalculation: 'WHEN_REQUIRED',
+      responseChecksumValidation: 'WHEN_REQUIRED',
       credentials: {
         accessKeyId: process.env.S3_ACCESS_KEY_ID,
         secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
@@ -56,12 +59,14 @@ export async function deleteObjects(keys) {
     await Promise.all(keys.map(k => fs.rm(path.join(LOCAL_DIR, k), { force: true })));
     return;
   }
-  for (let i = 0; i < keys.length; i += 1000) {
-    await s3.send(new DeleteObjectsCommand({
-      Bucket,
-      Delete: { Objects: keys.slice(i, i + 1000).map(Key => ({ Key })), Quiet: true },
-    }));
-  }
+  // Yksi kerrallaan: UpCloud vaatii DeleteObjects-pyynnöltä Content-MD5:n, jota uusi SDK ei lähetä.
+  // Tietokantarivi on jo poistettu, joten epäonnistuminen vain lokitetaan (jää orpo tiedosto).
+  const results = await Promise.allSettled(
+    keys.map(Key => s3.send(new DeleteObjectCommand({ Bucket, Key })))
+  );
+  results.forEach((r, i) => {
+    if (r.status === 'rejected') console.error('Tiedoston poisto epäonnistui:', keys[i], r.reason?.message);
+  });
 }
 
 // Allekirjoitus tehdään päivän alun ajanhetkellä, jolloin URL pysyy samana koko päivän
