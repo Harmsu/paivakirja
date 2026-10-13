@@ -10,7 +10,6 @@ React + Vite PWA (Netlify), Node/Express (Render), PostgreSQL (UpCloud), kuvat U
 - `backend/src/storage.js` – S3-tallennus (presigned URL:t), paikallinen levy vain kehitykseen
 - `backend/src/images.js` – sharp: EXIF-kierto, max 1600 px / JPEG 80 %, pienoiskuva 400 px
 - `frontend/src/views/` – Päivät, Päivä (muokkaus), Kuukausi, Vuosi, Tänä päivänä, Kartta, Asetukset
-- `ops/pg-backup-to-s3.sh` – yleinen yöllinen pg_dump → Object Storage (asennetaan palvelimelle erikseen)
 
 ## Paikallinen kehitys
 ```bash
@@ -37,3 +36,8 @@ Ilman Object Storage -bucketia kuvia voi testata asettamalla `.env`:iin `STORAGE
 `data.json` (`format: paikka-ja-kuvapaivakirja-export`, `version: 1`) + `photos/*.jpg`.
 `entries[]` sisältää päivän sarakkeet ja sisäkkäin `text_blocks`, `photos` (`file` = polku zipissä)
 ja `checkins` samoilla sarakenimillä kuin tietokannassa, joten tuonti voidaan tehdä myöhemmin.
+
+## Varmuuskopiot
+- Tietokanta: UpCloud-palvelimen yöllinen `/usr/local/bin/pg_backup.sh` (pg_dump → Google Drive, 14 vrk),
+  `paivakirja` lisätty sen tietokantalistaan.
+- Kuvat (Object Storage) eivät kuulu yölliseen varmuuskopioon: ota "Vie data" -zip säännöllisesti.
