@@ -1,6 +1,8 @@
-// Suosikin valinta alareunasta nousevana paneelina (bottom sheet). Eniten käytetyt ensin
+// Suosikin valinta ruudun keskelle avautuvana ikkunana. Eniten käytetyt ensin
 // (järjestys tulee backendistä). Suodatuskenttä näytetään, kun suosikkeja on paljon.
+// Piirretään portaalilla suoraan bodyyn: lomakkeen sisällä fixed-paneeli ei näkynyt puhelimessa.
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 const FILTER_FROM = 8;
 
@@ -17,7 +19,7 @@ export default function FavoritePicker({ favorites, onPick, onClose }) {
     ? favorites.filter(x => x.name.toLowerCase().includes(f) || (x.category || '').toLowerCase().includes(f))
     : favorites;
 
-  return (
+  return createPortal(
     <div className="sheet-backdrop" onClick={onClose}>
       <div className="sheet" role="dialog" aria-label="Valitse suosikeista" onClick={e => e.stopPropagation()}>
         <div className="sheet-head">
@@ -46,6 +48,7 @@ export default function FavoritePicker({ favorites, onPick, onClose }) {
           {shown.length === 0 && <li className="muted center">Ei osumia</li>}
         </ul>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

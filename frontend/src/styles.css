@@ -189,11 +189,21 @@ button.icon.star.on { color: var(--accent); }
 button.block { display: block; width: 100%; margin-bottom: 12px; }
 .fav-row { display: flex; flex-direction: column; gap: 6px; }
 .link-card { display: flex; justify-content: space-between; align-items: center; color: var(--text); font-weight: 600; min-height: 52px; }
-.sheet-backdrop { position: fixed; inset: 0; z-index: 1500; background: rgba(0, 0, 0, .45); display: flex; align-items: flex-end; justify-content: center; }
+.sheet-backdrop { position: fixed; inset: 0; z-index: 1500; background: rgba(0, 0, 0, .45);
+                  display: flex; align-items: center; justify-content: center;
+                  padding: calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom)); }
 .sheet {
-  background: var(--card); width: 100%; max-width: 760px; max-height: 75vh; display: flex; flex-direction: column; gap: 8px;
-  border-radius: 18px 18px 0 0; padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+  background: var(--card); width: 100%; max-width: 480px; min-height: min(320px, 70vh); max-height: 80vh;
+  display: flex; flex-direction: column; gap: 8px;
+  border-radius: 18px; padding: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, .25);
 }
+.map-sheet { max-width: 640px; max-height: 90vh; }
+.map-sheet p { margin: 0; }
+.pick-map { height: min(60vh, 520px); border-radius: 10px; z-index: 0; cursor: crosshair; }
+.pick-marker { background: var(--accent); border: 3px solid #fff; border-radius: 50%; box-shadow: 0 1px 6px rgba(0, 0, 0, .5); }
+.coords { flex-wrap: wrap; }
+.coords > .muted { white-space: nowrap; }
+.coord-actions { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; flex: 1 1 auto; }
 .sheet-head { display: flex; justify-content: space-between; align-items: center; }
 .sheet-head h2 { margin: 0; }
 .fav-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; }

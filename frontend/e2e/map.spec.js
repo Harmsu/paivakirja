@@ -58,3 +58,32 @@ test.describe('Kartta', () => {
     await expect(page.locator('.leaflet-popup-content')).toContainText('Tuomiokirkko');
   });
 });
+
+test.describe('Sijainti kartalta', () => {
+  test('sulkeminen ei muuta, napautus asettaa koordinaatit ja ne tallentuvat', async ({ authedPage: page, api }) => {
+    await page.goto(`/#/day/${TODAY}`);
+    await page.getByRole('button', { name: '+ Lisää paikka' }).click();
+    await page.getByPlaceholder('Paikan nimi').fill('Uimaranta');
+    // Sulje ilman valintaa -> ei koordinaatteja
+    await page.getByRole('button', { name: 'Valitse kartalta' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Valitse sijainti kartalta' });
+    await expect(dialog.getByRole('button', { name: 'Valitse tämä kohta' })).toBeDisabled();
+    await dialog.getByRole('button', { name: 'Sulje' }).click();
+    await expect(page.locator('.checkin-form .coords')).toContainText('Ei koordinaatteja');
+    // Napautus kartan keskelle -> merkki ja koordinaatit
+    await page.getByRole('button', { name: 'Valitse kartalta' }).click();
+    await page.getByTestId('pick-map').click();
+    await expect(dialog.locator('.pick-marker')).toBeVisible();
+    await expect(dialog).toContainText('📍');
+    await dialog.getByRole('button', { name: 'Valitse tämä kohta' }).click();
+    await expect(dialog).toBeHidden();
+    await expect(page.locator('.checkin-form .coords')).toContainText('📍');
+    await page.getByRole('button', { name: 'Tallenna paikka' }).click();
+    await expect(page.locator('.subcard').filter({ hasText: 'Uimaranta' })).toBeVisible();
+    const saved = (await api.get(`/api/entries/${TODAY}`)).checkins[0];
+    expect(saved.latitude).toBeGreaterThan(55);
+    expect(saved.latitude).toBeLessThan(72);
+    expect(saved.longitude).toBeGreaterThan(15);
+    expect(saved.longitude).toBeLessThan(35);
+  });
+});

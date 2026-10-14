@@ -1,10 +1,11 @@
 // Paikan lisäys/muokkaus: (a) nimi käsin, (b) haku Nominatimista, (c) nykyinen sijainti,
-// (d) valinta suosikeista. Käytetään myös suosikin muokkaukseen (forFavorite).
+// (d) valinta suosikeista, (e) sijainti kartalta. Käytetään myös suosikin muokkaukseen (forFavorite).
 // Suosikista valittaessa tiedot kopioidaan lomakkeelle, ja niitä voi vielä muokata.
 import { useState } from 'react';
 import { api } from '../api.js';
 import { formatCoords } from '../format.js';
 import FavoritePicker from './FavoritePicker.jsx';
+import LocationPicker from './LocationPicker.jsx';
 
 const EMPTY = { place_name: '', category: '', latitude: null, longitude: null };
 
@@ -15,6 +16,7 @@ export default function CheckinForm({
   const [favoriteId, setFavoriteId] = useState(null);
   const [saveAsFavorite, setSaveAsFavorite] = useState(false);
   const [picking, setPicking] = useState(false);
+  const [pickingMap, setPickingMap] = useState(false);
   const [results, setResults] = useState(null);
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
@@ -105,10 +107,18 @@ export default function CheckinForm({
           {hasCoords ? `📍 ${formatCoords(c.latitude, c.longitude)}` : 'Ei koordinaatteja'}
         </span>
         {hasCoords
-          ? <button type="button" className="link" onClick={() => set({ latitude: null, longitude: null })}>Poista</button>
-          : <button type="button" className="secondary" onClick={locate} disabled={!!busy}>
-              {busy === 'locate' ? 'Haetaan…' : 'Käytä nykyistä sijaintia'}
-            </button>}
+          ? <span className="coord-actions">
+              <button type="button" className="link" onClick={() => setPickingMap(true)}>Muuta kartalla</button>
+              <button type="button" className="link" onClick={() => set({ latitude: null, longitude: null })}>Poista</button>
+            </span>
+          : <span className="coord-actions">
+              <button type="button" className="secondary" onClick={locate} disabled={!!busy}>
+                {busy === 'locate' ? 'Haetaan…' : 'Käytä nykyistä sijaintia'}
+              </button>
+              <button type="button" className="secondary" onClick={() => setPickingMap(true)} disabled={!!busy}>
+                Valitse kartalta
+              </button>
+            </span>}
       </div>
       {!forFavorite && (
         isKnownFavorite
@@ -126,6 +136,15 @@ export default function CheckinForm({
         <button disabled={!!busy}>{busy === 'save' ? 'Tallennetaan…' : saveLabel}</button>
       </div>
       {picking && <FavoritePicker favorites={favorites} onPick={pickFavorite} onClose={() => setPicking(false)} />}
+      {pickingMap && (
+        <LocationPicker
+          start={hasCoords ? { latitude: c.latitude, longitude: c.longitude } : null}
+          // Ilman valintaa kartta keskitetään eniten käytettyyn suosikkiin, jolla on sijainti
+          fallback={favorites.find(f => f.latitude !== null) ?? null}
+          onPick={p => { set(p); setPickingMap(false); }}
+          onClose={() => setPickingMap(false)}
+        />
+      )}
     </form>
   );
 }

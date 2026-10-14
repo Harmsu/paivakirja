@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Päivänkakkara oranssilla taustalla; kukka mahtuu keskimmäiseen 80 %:iin (maskable-kuvakkeen turva-alue) -->
+  <defs>
+    <radialGradient id="center" cx="45%" cy="40%" r="60%">
+      <stop offset="0" stop-color="#ffe066"/>
+      <stop offset="1" stop-color="#f2a900"/>
+    </radialGradient>
+    <ellipse id="petal" cx="256" cy="148" rx="30" ry="78" fill="#ffffff" stroke="#f1e4d4" stroke-width="3"/>
+  </defs>
+  <rect width="512" height="512" fill="#e8730c"/>
+  <g>
+    <use href="#petal" transform="rotate(0 256 256)"/>
+    <use href="#petal" transform="rotate(22.5 256 256)"/>
+    <use href="#petal" transform="rotate(45 256 256)"/>
+    <use href="#petal" transform="rotate(67.5 256 256)"/>
+    <use href="#petal" transform="rotate(90 256 256)"/>
+    <use href="#petal" transform="rotate(112.5 256 256)"/>
+    <use href="#petal" transform="rotate(135 256 256)"/>
+    <use href="#petal" transform="rotate(157.5 256 256)"/>
+    <use href="#petal" transform="rotate(180 256 256)"/>
+    <use href="#petal" transform="rotate(202.5 256 256)"/>
+    <use href="#petal" transform="rotate(225 256 256)"/>
+    <use href="#petal" transform="rotate(247.5 256 256)"/>
+    <use href="#petal" transform="rotate(270 256 256)"/>
+    <use href="#petal" transform="rotate(292.5 256 256)"/>
+    <use href="#petal" transform="rotate(315 256 256)"/>
+    <use href="#petal" transform="rotate(337.5 256 256)"/>
+  </g>
+  <circle cx="256" cy="256" r="62" fill="url(#center)" stroke="#d98e00" stroke-width="4"/>
+</svg>
